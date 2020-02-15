@@ -1,0 +1,14 @@
+{
+  "name": "filetree",
+  "version": "0.0.1",
+  "description": "A tree structure representing a collection of files within directories",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Adrien Cransac",
+  "license": "ISC",
+  "devDependencies": {
+    "tester": "file:../tester"
+  }
+}
