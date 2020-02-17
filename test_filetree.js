@@ -25,8 +25,21 @@ function test_fileTreeWithOneFile(finish, check) {
 	                && fileHandle(branches(fileTree)[0]) === 0));
 }
 
+function test_fileTreeWithTwoFiles(finish, check) {
+  const fileTreeOneFile = insertFile(makeFileTree(), "/root/fileA.ext", 0);
+
+  const fileTreeTwoFiles = insertFile(fileTreeOneFile, "/root/fileB.ext", 1);
+
+  return finish(check(root(fileTreeTwoFiles) === "/root"
+	                && entryName(branches(fileTreeTwoFiles)[0]) === "fileA.ext"
+	                && fileHandle(branches(fileTreeTwoFiles)[0]) === 0
+	                && entryName(branches(fileTreeTwoFiles)[1]) === "fileB.ext"
+	                && fileHandle(branches(fileTreeTwoFiles)[1]) === 1));
+}
+
 Test.run([
   Test.makeTest(test_emptyFileTree, "Empty File Tree"),
   Test.makeTest(test_parseFilePath, "Parse File Path"),
   Test.makeTest(test_fileTreeWithOneFile, "File Tree With One File"),
+  Test.makeTest(test_fileTreeWithTwoFiles, "File Tree With Two Files"),
 ]);
