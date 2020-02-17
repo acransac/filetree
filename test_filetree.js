@@ -1,6 +1,10 @@
 const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, parseFilePath, root } = require('./filetree.js');
 const Test = require('tester');
 
+function insertFile(fileTree, filePath, fileHandle) {
+  return ((path, file) => insertInFileTree(fileTree, path, makeFileEntry(file, fileHandle)))(...parseFilePath(filePath));
+}
+
 function test_emptyFileTree(finish, check) {
   const emptyFileTree = makeFileTree();
 
@@ -14,9 +18,7 @@ function test_parseFilePath(finish, check) {
 }
 
 function test_fileTreeWithOneFile(finish, check) {
-  const fileTree = ((path, file) => insertInFileTree(makeFileTree(),
-	                                             path,
-	                                             makeFileEntry(file, 0)))(...parseFilePath("/root/file.ext"));
+  const fileTree = insertFile(makeFileTree(), "/root/file.ext", 0);
 
   return finish(check(root(fileTree) === "/root"
 	                && entryName(branches(fileTree)[0]) === "file.ext"
