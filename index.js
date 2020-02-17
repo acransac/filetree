@@ -1,6 +1,7 @@
 const {
   branches,
   entryName,
+  fileHandle,
   insertInFileTree,
   isDirectoryEntry,
   isFileSelected,
@@ -24,6 +25,7 @@ const {
 module.exports = {
   branches,
   entryName,
+  fileHandle,
   insertInFileTree,
   isDirectoryEntry,
   isFileSelected,
