@@ -288,6 +288,8 @@ module.exports = {
   selectedEntryBranchName,
   selectedEntryHandle,
   selectedEntryLeafName,
+  selectedEntryName,
+  selectedEntryType,
   selectNext,
   selectPrevious,
   visitChildBranch,
