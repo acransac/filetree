@@ -1,4 +1,4 @@
-const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectedEntryType } = require('./filetree.js');
+const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectedEntryType } = require('./filetree.js');
 const Test = require('tester');
 
 function insertFile(fileTree, filePath, fileHandle) {
@@ -37,6 +37,18 @@ function test_fileTreeWithOneFile(finish, check) {
 	                && fileHandle(branches(fileTree)[0]) === 0));
 }
 
+function test_selectionInFileTreeWithOneFile(finish, check) {
+  const selection = refreshSelectedFileTree(makeSelectionInFileTree(makeFileTree()),
+	                                    insertFile(makeFileTree(), "/root/file.ext", 0));
+
+  return finish(check(selectedBranch(selection).length === 1
+	                && selectedEntryName(selectedEntry(selection)) === "/file.ext"
+	                && selectedEntryLeafName(selectedEntry(selection)) === "file.ext"
+	                && selectedEntryBranchName(selectedEntry(selection)) === ""
+	                && selectedEntryHandle(selectedEntry(selection)) === 0
+	                && selectedEntryType(selectedEntry(selection)) === "file"));
+}
+
 function test_fileTreeWithTwoFiles(finish, check) {
   const fileTreeOneFile = insertFile(makeFileTree(), "/root/fileA.ext", 0);
 
@@ -54,5 +66,6 @@ Test.run([
   Test.makeTest(test_selectionInEmptyFileTree, "Selection In Empty File Tree"),
   Test.makeTest(test_parseFilePath, "Parse File Path"),
   Test.makeTest(test_fileTreeWithOneFile, "File Tree With One File"),
+  Test.makeTest(test_selectionInFileTreeWithOneFile, "Selection In File Tree With One File"),
   Test.makeTest(test_fileTreeWithTwoFiles, "File Tree With Two Files"),
 ]);
