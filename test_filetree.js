@@ -2,19 +2,21 @@ const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFi
 const Test = require('tester');
 
 function makeFileTreeWithFiles(...filePaths) {
-  const makeFileTreeWithFilesImpl = (fileTree, fileHandle, filePaths) => {
+  const makeFileTreeWithFilesImpl = (fileTree, selection, fileHandle, filePaths) => {
     if (filePaths.length === 0) {
-      return fileTree;
+      return [fileTree, selection];
     }
     else {
-      return makeFileTreeWithFilesImpl(((path, file) => insertInFileTree(fileTree, path, makeFileEntry(file, fileHandle)))
-	                                 (...parseFilePath(filePaths[0])),
+      return makeFileTreeWithFilesImpl(...((path, file) => {
+	                                 return (newFileTree => [newFileTree, refreshSelectedFileTree(selection, newFileTree)])
+	                                   (insertInFileTree(fileTree, path, makeFileEntry(file, fileHandle)));
+                                       })(...parseFilePath(filePaths[0])),
 	                               fileHandle + 1,
 	                               filePaths.slice(1));
     }
   };
 
-  return makeFileTreeWithFilesImpl(makeFileTree(), 0, filePaths);
+  return makeFileTreeWithFilesImpl(makeFileTree(), makeSelectionInFileTree(makeFileTree()), 0, filePaths);
 }
 
 function test_emptyFileTree(finish, check) {
@@ -41,7 +43,7 @@ function test_parseFilePath(finish, check) {
 }
 
 function test_fileTreeWithOneFile(finish, check) {
-  const fileTree = makeFileTreeWithFiles("/root/file.ext");
+  const fileTree = makeFileTreeWithFiles("/root/file.ext")[0];
 
   return finish(check(root(fileTree) === "/root"
 	                && branches(fileTree).length === 1
@@ -50,7 +52,8 @@ function test_fileTreeWithOneFile(finish, check) {
 }
 
 function test_selectionInFileTreeWithOneFile(finish, check) {
-  const selection = refreshSelectedFileTree(makeSelectionInFileTree(makeFileTree()), makeFileTreeWithFiles("/root/file.ext"));
+  const selection = refreshSelectedFileTree(makeSelectionInFileTree(makeFileTree()),
+	                                    makeFileTreeWithFiles("/root/file.ext")[0]);
 
   return finish(check(selectedBranch(selection).length === 1
 	                && selectedEntryName(selectedEntry(selection)) === "/file.ext"
@@ -61,7 +64,7 @@ function test_selectionInFileTreeWithOneFile(finish, check) {
 }
 
 function test_fileTreeWithTwoFiles(finish, check) {
-  const fileTreeTwoFiles = makeFileTreeWithFiles("/root/fileA.ext", "/root/fileB.ext");
+  const fileTreeTwoFiles = makeFileTreeWithFiles("/root/fileA.ext", "/root/fileB.ext")[0];
 
   return finish(check(root(fileTreeTwoFiles) === "/root"
 	                && entryName(branches(fileTreeTwoFiles)[0]) === "fileA.ext"
