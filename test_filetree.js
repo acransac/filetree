@@ -1,4 +1,4 @@
-const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectedEntryType } = require('./filetree.js');
+const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectedEntryType, selectNext, visitChildBranch } = require('./filetree.js');
 const Test = require('tester');
 
 function makeFileTreeWithFiles(...filePaths) {
@@ -64,13 +64,22 @@ function test_selectionInFileTreeWithOneFile(finish, check) {
 }
 
 function test_fileTreeWithTwoFiles(finish, check) {
-  const fileTreeTwoFiles = makeFileTreeWithFiles("/root/fileA.ext", "/root/fileB.ext")[0];
+  const [fileTree, selection] = makeFileTreeWithFiles("/root/fileA.ext", "/root/DIR/fileB.ext");
 
-  return finish(check(root(fileTreeTwoFiles) === "/root"
-	                && entryName(branches(fileTreeTwoFiles)[0]) === "fileA.ext"
-	                && fileHandle(branches(fileTreeTwoFiles)[0]) === 0
-	                && entryName(branches(fileTreeTwoFiles)[1]) === "fileB.ext"
-	                && fileHandle(branches(fileTreeTwoFiles)[1]) === 1));
+  return finish(check(root(fileTree) === "/root"
+	                && selectedEntryName(selectedEntry(selection)) === "/fileA.ext"
+	                && (directoryEntry => selectedEntryName(directoryEntry) === "/DIR"
+				                && selectedEntryBranchName(directoryEntry) === ""
+				                && selectedEntryLeafName(directoryEntry) === "DIR"
+				                && selectedEntryHandle(directoryEntry) === undefined
+				                && selectedEntryType(directoryEntry) === "directory")
+	                     (selectedEntry(selectNext(selection)))
+	                && (secondFileEntry => selectedEntryName(secondFileEntry) === "/DIR/fileB.ext"
+				                 && selectedEntryBranchName(secondFileEntry) === "/DIR"
+				                 && selectedEntryLeafName(secondFileEntry) === "fileB.ext"
+				                 && selectedEntryHandle(secondFileEntry) === 1
+				                 && selectedEntryType(secondFileEntry) === "file")
+	                     (selectedEntry(visitChildBranch(selectNext(selection))))));
 }
 
 Test.run([
