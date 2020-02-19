@@ -1,4 +1,4 @@
-const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectedEntryType, selectNext, visitChildBranch } = require('./filetree.js');
+const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectedEntryType, selectNext, selectPrevious, visitChildBranch, visitParentBranch } = require('./filetree.js');
 const Test = require('tester');
 
 function makeFileTreeWithFiles(...filePaths) {
@@ -82,6 +82,21 @@ function test_fileTreeWithTwoFiles(finish, check) {
 	                     (selectedEntry(visitChildBranch(selectNext(selection))))));
 }
 
+function test_upwardSelection(finish, check) {
+  const [fileTree, selection] = makeFileTreeWithFiles("/root/fileA.ext", "/root/DIR/fileB.ext");
+
+  const isFirstFileEntry = entry => {
+    return selectedEntryName(entry) === "/fileA.ext"
+	     && selectedEntryBranchName(entry) === ""
+	     && selectedEntryLeafName(entry) === "fileA.ext"
+	     && selectedEntryHandle(entry) === 0
+	     && selectedEntryType(entry) === "file";
+  };
+
+  return finish(check(isFirstFileEntry(selectedEntry(selectPrevious(selectNext(selection))))
+	                && isFirstFileEntry(selectedEntry(visitParentBranch(visitChildBranch(selectNext(selection)))))));
+}
+
 Test.run([
   Test.makeTest(test_emptyFileTree, "Empty File Tree"),
   Test.makeTest(test_selectionInEmptyFileTree, "Selection In Empty File Tree"),
@@ -89,4 +104,5 @@ Test.run([
   Test.makeTest(test_fileTreeWithOneFile, "File Tree With One File"),
   Test.makeTest(test_selectionInFileTreeWithOneFile, "Selection In File Tree With One File"),
   Test.makeTest(test_fileTreeWithTwoFiles, "File Tree With Two Files"),
+  Test.makeTest(test_upwardSelection, "Upward Selection"),
 ]);
