@@ -273,7 +273,6 @@ function isDirectorySelected(selectedEntry) {
 module.exports = {
   branches,
   entryName,
-  fileHandle,
   insertInFileTree,
   isDirectoryEntry,
   isFileSelected,
@@ -289,7 +288,6 @@ module.exports = {
   selectedEntryHandle,
   selectedEntryLeafName,
   selectedEntryName,
-  selectedEntryType,
   selectNext,
   selectPrevious,
   visitChildBranch,

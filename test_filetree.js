@@ -1,4 +1,4 @@
-const { branches, entryName, fileHandle, insertInFileTree, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectedEntryType, selectNext, selectPrevious, visitChildBranch, visitParentBranch } = require('./filetree.js');
+const { branches, entryName, insertInFileTree, isDirectoryEntry, isFileSelected, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectNext, selectPrevious, visitChildBranch, visitParentBranch } = require('./filetree.js');
 const Test = require('tester');
 
 function makeFileTreeWithFiles(...filePaths) {
@@ -33,7 +33,7 @@ function test_selectionInEmptyFileTree(finish, check) {
 	                && selectedEntryLeafName(selectedEntry(emptySelection)) === ""
 	                && selectedEntryBranchName(selectedEntry(emptySelection)) === ""
 	                && selectedEntryHandle(selectedEntry(emptySelection)) === undefined
-	                && selectedEntryType(selectedEntry(emptySelection)) === "file"));
+	                && isFileSelected(selectedEntry(emptySelection))));
 }
 
 function test_parseFilePath(finish, check) {
@@ -48,7 +48,7 @@ function test_fileTreeWithOneFile(finish, check) {
   return finish(check(root(fileTree) === "/root"
 	                && branches(fileTree).length === 1
 	                && entryName(branches(fileTree)[0]) === "file.ext"
-	                && fileHandle(branches(fileTree)[0]) === 0));
+	                && !isDirectoryEntry(branches(fileTree)[0])));
 }
 
 function test_selectionInFileTreeWithOneFile(finish, check) {
@@ -60,25 +60,27 @@ function test_selectionInFileTreeWithOneFile(finish, check) {
 	                && selectedEntryLeafName(selectedEntry(selection)) === "file.ext"
 	                && selectedEntryBranchName(selectedEntry(selection)) === ""
 	                && selectedEntryHandle(selectedEntry(selection)) === 0
-	                && selectedEntryType(selectedEntry(selection)) === "file"));
+	                && isFileSelected(selectedEntry(selection))));
 }
 
 function test_fileTreeWithTwoFiles(finish, check) {
   const [fileTree, selection] = makeFileTreeWithFiles("/root/fileA.ext", "/root/DIR/fileB.ext");
 
   return finish(check(root(fileTree) === "/root"
+	                && branches(fileTree).length === 2
+	                && isDirectoryEntry(branches(fileTree)[1])
 	                && selectedEntryName(selectedEntry(selection)) === "/fileA.ext"
 	                && (directoryEntry => selectedEntryName(directoryEntry) === "/DIR"
 				                && selectedEntryBranchName(directoryEntry) === ""
 				                && selectedEntryLeafName(directoryEntry) === "DIR"
 				                && selectedEntryHandle(directoryEntry) === undefined
-				                && selectedEntryType(directoryEntry) === "directory")
+				                && !isFileSelected(directoryEntry))
 	                     (selectedEntry(selectNext(selection)))
 	                && (secondFileEntry => selectedEntryName(secondFileEntry) === "/DIR/fileB.ext"
 				                 && selectedEntryBranchName(secondFileEntry) === "/DIR"
 				                 && selectedEntryLeafName(secondFileEntry) === "fileB.ext"
 				                 && selectedEntryHandle(secondFileEntry) === 1
-				                 && selectedEntryType(secondFileEntry) === "file")
+				                 && isFileSelected(secondFileEntry))
 	                     (selectedEntry(visitChildBranch(selectNext(selection))))));
 }
 
@@ -90,7 +92,7 @@ function test_upwardSelection(finish, check) {
 	     && selectedEntryBranchName(entry) === ""
 	     && selectedEntryLeafName(entry) === "fileA.ext"
 	     && selectedEntryHandle(entry) === 0
-	     && selectedEntryType(entry) === "file";
+	     && isFileSelected(entry);
   };
 
   return finish(check(isFirstFileEntry(selectedEntry(selectPrevious(selectNext(selection))))
@@ -105,7 +107,7 @@ function test_fileTreeWithChangedRoot(finish, check) {
 	     && selectedEntryBranchName(entry) === ""
 	     && selectedEntryLeafName(entry) === "fileB.ext"
 	     && selectedEntryHandle(entry) === 1
-	     && selectedEntryType(entry) === "file";
+	     && isFileSelected(entry);
   };
 
   return finish(check(root(fileTree) === "/parentDir"
@@ -114,14 +116,14 @@ function test_fileTreeWithChangedRoot(finish, check) {
 		                                && selectedEntryBranchName(directoryEntry) === ""
 				                && selectedEntryLeafName(directoryEntry) === "firstRoot"
 				                && selectedEntryHandle(directoryEntry) === undefined
-				                && selectedEntryType(directoryEntry) === "directory")
+				                && !isFileSelected(directoryEntry))
 	                     (selectedEntry(selectNext(visitParentBranch(selection))))
 	                && isSecondFileEntry(selectedEntry(selectPrevious(selectNext(visitParentBranch(selection)))))
 	                && (firstFileEntry => selectedEntryName(firstFileEntry) === "/firstRoot/fileA.ext"
 		                                && selectedEntryBranchName(firstFileEntry) === "/firstRoot"
 				                && selectedEntryLeafName(firstFileEntry) === "fileA.ext"
 				                && selectedEntryHandle(firstFileEntry) === 0
-				                && selectedEntryType(firstFileEntry) === "file")
+				                && isFileSelected(firstFileEntry))
 	                     (selectedEntry(visitChildBranch(selectNext(visitParentBranch(selection)))))));
 }
 
