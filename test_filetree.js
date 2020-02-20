@@ -97,6 +97,34 @@ function test_upwardSelection(finish, check) {
 	                && isFirstFileEntry(selectedEntry(visitParentBranch(visitChildBranch(selectNext(selection)))))));
 }
 
+function test_fileTreeWithChangedRoot(finish, check) {
+  const [fileTree, selection] = makeFileTreeWithFiles("/parentDir/firstRoot/fileA.ext", "/parentDir/fileB.ext");
+
+  const isSecondFileEntry = entry => {
+    return selectedEntryName(entry) ===  "/fileB.ext"
+	     && selectedEntryBranchName(entry) === ""
+	     && selectedEntryLeafName(entry) === "fileB.ext"
+	     && selectedEntryHandle(entry) === 1
+	     && selectedEntryType(entry) === "file";
+  };
+
+  return finish(check(root(fileTree) === "/parentDir"
+	                && isSecondFileEntry(selectedEntry(visitParentBranch(selection)))
+	                && (directoryEntry => selectedEntryName(directoryEntry) === "/firstRoot"
+		                                && selectedEntryBranchName(directoryEntry) === ""
+				                && selectedEntryLeafName(directoryEntry) === "firstRoot"
+				                && selectedEntryHandle(directoryEntry) === undefined
+				                && selectedEntryType(directoryEntry) === "directory")
+	                     (selectedEntry(selectNext(visitParentBranch(selection))))
+	                && isSecondFileEntry(selectedEntry(selectPrevious(selectNext(visitParentBranch(selection)))))
+	                && (firstFileEntry => selectedEntryName(firstFileEntry) === "/firstRoot/fileA.ext"
+		                                && selectedEntryBranchName(firstFileEntry) === "/firstRoot"
+				                && selectedEntryLeafName(firstFileEntry) === "fileA.ext"
+				                && selectedEntryHandle(firstFileEntry) === 0
+				                && selectedEntryType(firstFileEntry) === "file")
+	                     (selectedEntry(visitChildBranch(selectNext(visitParentBranch(selection)))))));
+}
+
 Test.run([
   Test.makeTest(test_emptyFileTree, "Empty File Tree"),
   Test.makeTest(test_selectionInEmptyFileTree, "Selection In Empty File Tree"),
@@ -105,4 +133,5 @@ Test.run([
   Test.makeTest(test_selectionInFileTreeWithOneFile, "Selection In File Tree With One File"),
   Test.makeTest(test_fileTreeWithTwoFiles, "File Tree With Two Files"),
   Test.makeTest(test_upwardSelection, "Upward Selection"),
+  Test.makeTest(test_fileTreeWithChangedRoot, "File Tree With Changed Root"),
 ]);
