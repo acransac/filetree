@@ -84,10 +84,28 @@ function insertInFileTree(fileTree, path, file) {
 				             file));
   }
   else {
-    return makeFileTree(path, insertInFileTreeImpl([],
-	                                           [file],
-	                                           root(fileTree).slice(path.length).split("/").slice(1),
-	                                           ...branches(fileTree)));
+    const newRootAndPathsFromNewRoot = (insertedFilePath, oldRoot) => {
+      const newRootAndPathsFromNewRootImpl = (newRoot, insertedFilePath, oldRoot) => {
+        if (insertedFilePath.length === 0 || oldRoot.length === 0) {
+          return [newRoot.join("/"), insertedFilePath, oldRoot];
+        }
+	else if (insertedFilePath[0] !== oldRoot[0]) {
+          return [newRoot.join("/"), insertedFilePath, oldRoot];
+        }
+	else {
+          return newRootAndPathsFromNewRootImpl([...newRoot, oldRoot[0]], insertedFilePath.slice(1), oldRoot.slice(1));
+        }
+      };
+
+      return newRootAndPathsFromNewRootImpl([""], insertedFilePath.split("/").slice(1), oldRoot.split("/").slice(1));
+    };
+ 
+    return ((newRoot, insertedFilePathFromNewRoot, oldBranchPathFromNewRoot) => {
+      return makeFileTree(newRoot, insertInFileTreeImpl([],
+	                                                insertInFileTreeImpl([], [], insertedFilePathFromNewRoot, file),
+	                                                oldBranchPathFromNewRoot,
+	                                                ...branches(fileTree)));
+    })(...newRootAndPathsFromNewRoot(path, root(fileTree)));
   }
 }
 
