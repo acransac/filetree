@@ -294,7 +294,6 @@ module.exports = {
   insertInFileTree,
   isDirectoryEntry,
   isFileSelected,
-  makeDirectoryEntry,
   makeFileEntry,
   makeFileTree,
   makeSelectionInFileTree,
