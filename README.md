@@ -18,10 +18,10 @@ and import the needed functionalities:
 Create an empty _file tree_ and selection with `makeFileTree` and `makeSelectionInFileTree`. Then, use `insertInFileTree` to add entries which are created with `makeFileEntry`. After each insertion, the selection is updated with `refreshSelectedFileTree`.
 
 A file tree can be inspected with `root` and `branches`, and an entry with `entryName` or `isDirectoryEntry` though it is preferred to inspect the selection. This is done with `selectedBranch`, `selectedEntry`, `selectedEntryBranchName`, `selectedEntryHandle`, `selectedEntryLeafName`, `selectedEntryName` or `isFileSelected`.
-* `makeFileTree:: (String, Maybe<Branches>) -> FileTree`
-  | Parameter | Type              | Description                                                    |
-  |-----------|-------------------|----------------------------------------------------------------|
-  | root      | String            | The path to the root of the file tree, written `/path/to/root` |
+* `makeFileTree:: (Maybe<String>, Maybe<Branches>) -> FileTree`
+  | Parameter | Type              | Description |
+  |-----------|-------------------|-------------|
+  | root      | Maybe\<String>    | The path to the root of the file tree, written `/path/to/root`. Default: the empty string, it is deduced when inserting files. Specify if implementing new behaviour |
   | branches  | Maybe\<Branches>  | The initial branches of the tree. Default: the empty branch. Specify if implementing new behaviour |
 
 * `makeSelectionInFileTree:: (FileTree, Maybe<Branches>, Maybe<SelectedEntry>) -> Selection`
@@ -41,7 +41,7 @@ A file tree can be inspected with `root` and `branches`, and an entry with `entr
 * `makeFileEntry:: (String, Any) -> FileEntry`
   | Parameter | Type   | Description                                                                                         |
   |-----------|--------|-----------------------------------------------------------------------------------------------------|
-  | name      | String | The file name as in `/path/name`                                                                    |
+  | name      | String | The file name read in `/path/name`                                                                  |
   | handle    | Any    | The handle can be anything relevant in the application's context such as a file id, a callback, etc |
 
 * `refreshSelectedFileTree:: (Selection, FileTree) -> Selection`
@@ -80,10 +80,10 @@ A file tree can be inspected with `root` and `branches`, and an entry with `entr
   | entry     | Entry | The entry checked |
 
 * `selectedBranch:: Selection -> Branches`
-  | Parameter / Returned | Type      | Description                               |
-  |----------------------|-----------|-------------------------------------------|
-  | selectionInFileTree  | Selection | A selection                               |
-  | _returned_           | Branches  | The branch to which the selection belongs |
+  | Parameter / Returned | Type      | Description                                                                 |
+  |----------------------|-----------|-----------------------------------------------------------------------------|
+  | selectionInFileTree  | Selection | A selection                                                                 |
+  | _returned_           | Branches  | The branch to which the selection belongs. Use if implementing new behavior |
 
 * `selectedEntry:: Selection -> SelectedEntry`
   | Parameter           | Type      | Description |
@@ -118,3 +118,39 @@ A file tree can be inspected with `root` and `branches`, and an entry with `entr
   | Parameter     | Type          | Description      |
   |---------------|---------------|------------------|
   | selectedEntry | SelectedEntry | A selected entry |
+
+Example:
+
+```javascript
+    const { insertInFileTree, isFileSelected, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName } = require('@acransac/filetree');
+
+    const emptyFileTree = makeFileTree();
+
+    const emptySelection = makeSelectionInFileTree(emptyFileTree);
+
+    const [filePath, fileName] = parseFilePath("/root/file");
+
+    const selection = refreshSelectedFileTree(emptySelection,
+                                              insertInFileTree(emptyFileTree,
+                                                               filePath,
+                                                               makeFileEntry(fileName, () => "File handled")));
+
+    reportOnSelection(selection);
+
+    function reportOnSelection(selection) {
+      console.log(`Is the selection a file? ${isFileSelected(selectedEntry(selection)) ? "Yes" : "No"}`);
+      console.log(`Full entry name: \"${selectedEntryName(selectedEntry(selection))}\"`);
+      console.log(`Entry branch name: \"${selectedEntryBranchName(selectedEntry(selection))}\"`);
+      console.log(`Entry leaf name: \"${selectedEntryLeafName(selectedEntry(selection))}\"`);
+      console.log(`Using the handle: ${selectedEntryHandle(selectedEntry(selection))()}`);
+    }
+```
+
+```shell
+    $ node example.js
+    Is the selection a file? Yes
+    Full entry name: "/file"
+    Entry branch name: ""
+    Entry leaf name: "file"
+    Using the handle: File handled
+```
