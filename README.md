@@ -50,7 +50,7 @@ A file tree can be inspected with `root` and `branches`, and an entry with `entr
   | selectionInFileTree | Selection | The selection with an outdated referenced tree |
   | newFileTree         | FileTree  | The referenced tree after insertion            |
 
-* `parseFilePath:: String -> (String, String)
+* `parseFilePath:: String -> (String, String)`
   | Parameter / Returned | Type             | Description                                                        |
   |----------------------|------------------|--------------------------------------------------------------------|
   | fullPath             | String           | The path to a file with its name included, written `/path/to/file` |
@@ -161,13 +161,13 @@ A file tree which has multiple entries can be navigated with a selection. The la
   | Parameter / Returned | Type      | Description |
   |----------------------|-----------|-------------|
   | selectionInFileTree  | Selection | A selection |
-  | _returned_           | Selection | A new selection set on the next entry in the selected branch. If the input selection is the last of the branch, it is returned |
+  | _returned_           | Selection | A new selection set on the next entry in the selected branch. If the input selection is the last entry of the branch, it is returned |
 
 * `selectPrevious:: Selection -> Selection`
   | Parameter / Returned | Type      | Description |
   |----------------------|-----------|-------------|
   | selectionInFileTree  | Selection | A selection |
-  | _returned_           | Selection | A new selection set on the previous entry in the selected branch. If the input selection is the first of the branch, it is returned |
+  | _returned_           | Selection | A new selection set on the previous entry in the selected branch. If the input selection is the first entry of the branch, it is returned |
 
 * `visitChildBranch:: Selection -> Selection`
   | Parameter / Returned | Type      | Description |
