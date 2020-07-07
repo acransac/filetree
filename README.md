@@ -17,7 +17,7 @@ and import the needed functionalities:
 ## Make a File Tree And Selection
 Create an empty _file tree_ and selection with `makeFileTree` and `makeSelectionInFileTree`. Then, use `insertInFileTree` to add entries which are created with `makeFileEntry`. After each insertion, the selection is updated with `refreshSelectedFileTree`.
 
-A file tree can be inspected with `root` and `branches`, and an entry with `entryName` or `isDirectoryEntry` though it is preferred to inspect the selection. This is done with `selectedBranch`, `selectedEntry`, `selectedEntryBranchName`, `selectedEntryHandle`, `selectedEntryLeafName`, `selectedEntryName` or `isFileSelected`.
+A file tree can be inspected with `root` and `branches`, and an entry with `entryName` or `isDirectoryEntry` though it is preferred to inspect the selection. This is done with `selectedBranch`, `selectedEntry`, `selectedEntryBranchName`, `selectedEntryHandle`, `selectedEntryLeafName`, `selectedEntryName` or `isFileSelected`:
 * `makeFileTree:: (Maybe<String>, Maybe<Branches>) -> FileTree`
   | Parameter | Type              | Description |
   |-----------|-------------------|-------------|
@@ -153,4 +153,99 @@ Example:
     Entry branch name: ""
     Entry leaf name: "file"
     Using the handle: File handled
+```
+
+## Navigate The File Tree
+A file tree which has multiple entries can be navigated with a selection. The latter can visit the content of a directory or inspect parent or nested directories. At any point, the selection refers to a selected branch to which the selected entry belongs. The navigation is realized with `selectNext`, `selectPrevious`, `visitChildBranch` and `visitParentBranch`:
+* `selectNext:: Selection -> Selection`
+  | Parameter / Returned | Type      | Description |
+  |----------------------|-----------|-------------|
+  | selectionInFileTree  | Selection | A selection |
+  | _returned_           | Selection | A new selection set on the next entry in the selected branch. If the input selection is the last of the branch, it is returned |
+
+* `selectPrevious:: Selection -> Selection`
+  | Parameter / Returned | Type      | Description |
+  |----------------------|-----------|-------------|
+  | selectionInFileTree  | Selection | A selection |
+  | _returned_           | Selection | A new selection set on the previous entry in the selected branch. If the input selection is the first of the branch, it is returned |
+
+* `visitChildBranch:: Selection -> Selection`
+  | Parameter / Returned | Type      | Description |
+  |----------------------|-----------|-------------|
+  | selectionInFileTree  | Selection | A selection |
+  | _returned_           | Selection | If the input selection is a directory, the new selection has its selected branch changed to the content of this directory and is set on its first entry. If the input selection is a file, it is returned |
+
+* `visitParentBranch:: Selection -> Selection`
+  | Parameter / Returned | Type      | Description |
+  |----------------------|-----------|-------------|
+  | selectionInFileTree  | Selection | A selection |
+  | _returned_           | Selection | If the input selection has a parent directory, the new selection has its selected branch changed to the content of this directory and is set on its first entry. Otherwise, the selection is set on the first entry in the current directory, and the selected branch remains unchanged |
+
+Example:
+
+```javascript
+    const { insertInFileTree, isFileSelected, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectNext, selectPrevious, visitChildBranch, visitParentBranch } = require('@acransac/filetree');
+
+    const [fileTree, selection] = insertFile(makeFileTree(),
+                                             makeSelectionInFileTree(makeFileTree()),
+                                             ...parseFilePath("/root/fileA"));
+
+    const [newFileTree, newSelection] = insertFile(fileTree, selection, ...parseFilePath("/root/dir/fileB"));
+
+    reportOnSelection(selectNext(newSelection));
+
+    reportOnSelection(selectPrevious(selectNext(newSelection)));
+
+    reportOnSelection(visitChildBranch(selectNext(newSelection)));
+
+    reportOnSelection(visitParentBranch(visitChildBranch(selectNext(newSelection))));
+
+    function insertFile(fileTree, selection, filePath, fileName) {
+      return (fileTree => [fileTree, refreshSelectedFileTree(selection, fileTree)])
+               (insertInFileTree(fileTree, filePath, makeFileEntry(fileName, () => `${fileName} handled`)));
+    }
+
+    function reportOnSelection(selection) {
+      console.log(`Is the selection a file? ${isFileSelected(selectedEntry(selection)) ? "Yes" : "No"}`);
+      console.log(`Full entry name: \"${selectedEntryName(selectedEntry(selection))}\"`);
+      console.log(`Entry branch name: \"${selectedEntryBranchName(selectedEntry(selection))}\"`);
+      console.log(`Entry leaf name: \"${selectedEntryLeafName(selectedEntry(selection))}\"`);
+
+      if (isFileSelected(selectedEntry(selection))) {
+        console.log(`Using the handle: ${selectedEntryHandle(selectedEntry(selection))()}`);
+      }
+
+      console.log("\n");
+    }
+```
+
+```shell
+    $ node example.js
+    Is the selection a file? No
+    Full entry name: "/dir"
+    Entry branch name: ""
+    Entry leaf name: "dir"
+
+
+    Is the selection a file? Yes
+    Full entry name: "/fileA"
+    Entry branch name: ""
+    Entry leaf name: "fileA"
+    Using the handle: fileA handled
+
+
+    Is the selection a file? Yes
+    Full entry name: "/dir/fileB"
+    Entry branch name: "/dir"
+    Entry leaf name: "fileB"
+    Using the handle: fileB handled
+
+
+    Is the selection a file? Yes
+    Full entry name: "/fileA"
+    Entry branch name: ""
+    Entry leaf name: "fileA"
+    Using the handle: fileA handled
+
+
 ```
