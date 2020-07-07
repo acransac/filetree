@@ -1,10 +1,10 @@
-// Helpers --
-function parseFilePath(fullPath) {
-  return (elements => [elements.slice(0, -1).join("/"), elements[elements.length - 1]])(fullPath.split("/"));
+// # File Tree Types
+// ## Entry
+function entryName(entry) {
+  return isDirectoryEntry(entry) ? directoryName(entry) : fileName(entry);
 }
 
-// Types --
-// Directory
+// ## Directory Entry
 function makeDirectoryEntry(name, content) {
   return [name, content];
 }
@@ -21,7 +21,7 @@ function directoryContent(directoryEntry) {
   return directoryEntry[1];
 }
 
-// File
+// ## File Entry
 function makeFileEntry(name, handle) {
   return [name, handle];
 }
@@ -34,12 +34,7 @@ function fileHandle(fileEntry) {
   return fileEntry[1];
 }
 
-// Entry
-function entryName(entry) {
-  return isDirectoryEntry(entry) ? directoryName(entry) : fileName(entry);
-}
-
-// File tree
+// ## File Tree
 function makeFileTree(root, branches) {
   return [root, branches ? branches : []];
 }
@@ -161,7 +156,8 @@ function lookupPreviousInBranch(branch, namedEntry, errorFunction) {
   return lookupPreviousInBranchImpl(branch[0], branch, namedEntry, errorFunction);
 }
 
-// Selection in file tree
+// # Selection Types
+// ## Selection
 function makeSelectionInFileTree(fileTree, selectedBranch, selectedEntry) {
   if (branches(fileTree).length === 0) {
     return [fileTree, [], makeSelectedEntry()];
@@ -203,34 +199,12 @@ function refreshSelectedFileTree(selectionInFileTree, newFileTree) {
 				                   selectedEntryType(entry)));
 }
 
-function selectAnotherEntryInBranch(selectionInFileTree, selector) {
-  const otherEntry = selector(selectedBranch(selectionInFileTree),
-	                      selectedEntryLeafName(selectedEntry(selectionInFileTree)),
-	                      entry => {});
-
-  return makeSelectionInFileTree(selectedFileTree(selectionInFileTree),
-                                 selectedBranch(selectionInFileTree),
-	                         makeSelectedEntry(selectedEntryBranchName(selectedEntry(selectionInFileTree)) + `/${entryName(otherEntry)}`,
-                                                   isDirectoryEntry(otherEntry) ? undefined : fileHandle(otherEntry),
-                                                   isDirectoryEntry(otherEntry) ? "directory" : "file"));
-}
-
 function selectNext(selectionInFileTree) {
   return selectAnotherEntryInBranch(selectionInFileTree, lookupNextInBranch);
 }
 
 function selectPrevious(selectionInFileTree) {
   return selectAnotherEntryInBranch(selectionInFileTree, lookupPreviousInBranch);
-}
-
-function selectAnotherBranch(selectionInFileTree, branchName) {
-  const newBranch = lookupBranch(selectedFileTree(selectionInFileTree), branchName);
-
-  return makeSelectionInFileTree(selectedFileTree(selectionInFileTree),
-                                 newBranch,
-	                         makeSelectedEntry(`${branchName}/${entryName(newBranch[0])}`,
-                                                   isDirectoryEntry(newBranch[0]) ? undefined : fileHandle(newBranch[0]),
-                                                   isDirectoryEntry(newBranch[0]) ? "directory" : "file"));
 }
 
 function visitChildBranch(selectionInFileTree) {
@@ -250,17 +224,51 @@ function visitParentBranch(selectionInFileTree) {
   return selectAnotherBranch(selectionInFileTree, newBranchName);
 }
 
-// Selected entry
+function selectAnotherBranch(selectionInFileTree, branchName) {
+  const newBranch = lookupBranch(selectedFileTree(selectionInFileTree), branchName);
+
+  return makeSelectionInFileTree(selectedFileTree(selectionInFileTree),
+                                 newBranch,
+	                         makeSelectedEntry(`${branchName}/${entryName(newBranch[0])}`,
+                                                   isDirectoryEntry(newBranch[0]) ? undefined : fileHandle(newBranch[0]),
+                                                   isDirectoryEntry(newBranch[0]) ? "directory" : "file"));
+}
+
+function selectAnotherEntryInBranch(selectionInFileTree, selector) {
+  const otherEntry = selector(selectedBranch(selectionInFileTree),
+	                      selectedEntryLeafName(selectedEntry(selectionInFileTree)),
+	                      entry => {});
+
+  return makeSelectionInFileTree(selectedFileTree(selectionInFileTree),
+                                 selectedBranch(selectionInFileTree),
+	                         makeSelectedEntry(selectedEntryBranchName(selectedEntry(selectionInFileTree)) + `/${entryName(otherEntry)}`,
+                                                   isDirectoryEntry(otherEntry) ? undefined : fileHandle(otherEntry),
+                                                   isDirectoryEntry(otherEntry) ? "directory" : "file"));
+}
+
+// ## Selected Entry
 function makeSelectedEntry(name, handle, type) {
   return [name ? name : "", handle, type ? type : "file"];
+}
+
+function isDirectorySelected(selectedEntry) {
+  return selectedEntryType(selectedEntry) === "directory";
+}
+
+function isFileSelected(selectedEntry) {
+  return selectedEntryType(selectedEntry) === "file";
 }
 
 function selectedEntryName(selectedEntry) {
   return selectedEntry[0];
 }
 
-function selectedEntryLeafName(selectedEntry) {
-  return selectedEntryName(selectedEntry).split("/").slice(-1)[0];
+function selectedEntryHandle(selectedEntry) {
+  return selectedEntry[1];
+}
+
+function selectedEntryType(selectedEntry) {
+  return selectedEntry[2];
 }
 
 function selectedEntryBranchName(selectedEntry) {
@@ -272,20 +280,13 @@ function selectedEntryBranchName(selectedEntry) {
   }
 }
 
-function selectedEntryHandle(selectedEntry) {
-  return selectedEntry[1];
+function selectedEntryLeafName(selectedEntry) {
+  return selectedEntryName(selectedEntry).split("/").slice(-1)[0];
 }
 
-function selectedEntryType(selectedEntry) {
-  return selectedEntry[2];
-}
-
-function isFileSelected(selectedEntry) {
-  return selectedEntryType(selectedEntry) === "file";
-}
-
-function isDirectorySelected(selectedEntry) {
-  return selectedEntryType(selectedEntry) === "directory";
+// # Helpers
+function parseFilePath(fullPath) {
+  return (elements => [elements.slice(0, -1).join("/"), elements[elements.length - 1]])(fullPath.split("/"));
 }
 
 module.exports = {
