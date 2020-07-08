@@ -102,11 +102,11 @@ function insertInFileTree(fileTree, path, file) {
     }
     else if (isDirectoryEntry(branch[0]) && directoryName(branch[0]) === path[0]) {
       return [...entries,
-	      makeDirectoryEntry(path[0], insertInFileTreeImpl([],
-		                                               directoryContent(branch[0]),
-		                                               path.slice(1),
-		                                               ...insertedFileTree)),
-	      ...branch.slice(1)];
+              makeDirectoryEntry(path[0], insertInFileTreeImpl([],
+                                                               directoryContent(branch[0]),
+                                                               path.slice(1),
+                                                               ...insertedFileTree)),
+              ...branch.slice(1)];
     }
     else {
       return insertInFileTreeImpl([...entries, branch[0]], branch.slice(1), path, ...insertedFileTree);
@@ -118,10 +118,10 @@ function insertInFileTree(fileTree, path, file) {
   }
   else if (path.startsWith(root(fileTree))) {
     return makeFileTree(root(fileTree),
-	                insertInFileTreeImpl([],
-				             branches(fileTree),
-				             path.slice(root(fileTree).length).split("/").slice(1),
-				             file));
+                        insertInFileTreeImpl([],
+                                             branches(fileTree),
+                                             path.slice(root(fileTree).length).split("/").slice(1),
+                                             file));
   }
   else {
     const newRootAndPathsFromNewRoot = (insertedFilePath, oldRoot) => {
@@ -129,22 +129,22 @@ function insertInFileTree(fileTree, path, file) {
         if (insertedFilePath.length === 0 || oldRoot.length === 0) {
           return [newRoot.join("/"), insertedFilePath, oldRoot];
         }
-	else if (insertedFilePath[0] !== oldRoot[0]) {
+        else if (insertedFilePath[0] !== oldRoot[0]) {
           return [newRoot.join("/"), insertedFilePath, oldRoot];
         }
-	else {
+        else {
           return newRootAndPathsFromNewRootImpl([...newRoot, oldRoot[0]], insertedFilePath.slice(1), oldRoot.slice(1));
         }
       };
 
       return newRootAndPathsFromNewRootImpl([""], insertedFilePath.split("/").slice(1), oldRoot.split("/").slice(1));
     };
- 
+
     return ((newRoot, insertedFilePathFromNewRoot, oldBranchPathFromNewRoot) => {
       return makeFileTree(newRoot, insertInFileTreeImpl([],
-	                                                insertInFileTreeImpl([], [], insertedFilePathFromNewRoot, file),
-	                                                oldBranchPathFromNewRoot,
-	                                                ...branches(fileTree)));
+                                                        insertInFileTreeImpl([], [], insertedFilePathFromNewRoot, file),
+                                                        oldBranchPathFromNewRoot,
+                                                        ...branches(fileTree)));
     })(...newRootAndPathsFromNewRoot(path, root(fileTree)));
   }
 }
@@ -217,12 +217,12 @@ function makeSelectionInFileTree(fileTree, selectedBranch, selectedEntry) {
   }
   else {
     return [fileTree,
-	    selectedBranch,
-	    selectedEntryName(selectedEntry) === ""
-	      ? makeSelectedEntry(`/${entryName(branches(fileTree)[0])}`,
-	                          isDirectoryEntry(branches(fileTree)[0]) ? undefined : fileHandle(branches(fileTree)[0]),
-	                          isDirectoryEntry(branches(fileTree)[0]) ? "directory" : "file")
-	      : selectedEntry];
+            selectedBranch,
+            selectedEntryName(selectedEntry) === ""
+              ? makeSelectedEntry(`/${entryName(branches(fileTree)[0])}`,
+                                  isDirectoryEntry(branches(fileTree)[0]) ? undefined : fileHandle(branches(fileTree)[0]),
+                                  isDirectoryEntry(branches(fileTree)[0]) ? "directory" : "file")
+              : selectedEntry];
   }
 }
 
@@ -261,11 +261,11 @@ function refreshSelectedFileTree(selectionInFileTree, newFileTree) {
 
   const entry = selectedEntry(selectionInFileTree);
 
-  return makeSelectionInFileTree(newFileTree, 
+  return makeSelectionInFileTree(newFileTree,
                                  lookupBranch(newFileTree, `${newSelectionBranchName}${selectedEntryBranchName(entry)}`),
-	                         makeSelectedEntry(`${newSelectionBranchName}${selectedEntryName(entry)}`,
-					           selectedEntryHandle(entry),
-				                   selectedEntryType(entry)));
+                                 makeSelectedEntry(`${newSelectionBranchName}${selectedEntryName(entry)}`,
+                                                   selectedEntryHandle(entry),
+                                                   selectedEntryType(entry)));
 }
 
 /*
@@ -318,19 +318,19 @@ function selectAnotherBranch(selectionInFileTree, branchName) {
 
   return makeSelectionInFileTree(selectedFileTree(selectionInFileTree),
                                  newBranch,
-	                         makeSelectedEntry(`${branchName}/${entryName(newBranch[0])}`,
+                                 makeSelectedEntry(`${branchName}/${entryName(newBranch[0])}`,
                                                    isDirectoryEntry(newBranch[0]) ? undefined : fileHandle(newBranch[0]),
                                                    isDirectoryEntry(newBranch[0]) ? "directory" : "file"));
 }
 
 function selectAnotherEntryInBranch(selectionInFileTree, selector) {
   const otherEntry = selector(selectedBranch(selectionInFileTree),
-	                      selectedEntryLeafName(selectedEntry(selectionInFileTree)),
-	                      entry => {});
+                              selectedEntryLeafName(selectedEntry(selectionInFileTree)),
+                              entry => {});
 
   return makeSelectionInFileTree(selectedFileTree(selectionInFileTree),
                                  selectedBranch(selectionInFileTree),
-	                         makeSelectedEntry(selectedEntryBranchName(selectedEntry(selectionInFileTree)) + `/${entryName(otherEntry)}`,
+                                 makeSelectedEntry(selectedEntryBranchName(selectedEntry(selectionInFileTree)) + `/${entryName(otherEntry)}`,
                                                    isDirectoryEntry(otherEntry) ? undefined : fileHandle(otherEntry),
                                                    isDirectoryEntry(otherEntry) ? "directory" : "file"));
 }
