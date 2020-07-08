@@ -99,7 +99,7 @@ A file tree can be inspected with `root` and `branches`, and an entry with `entr
 * `selectedEntryHandle:: SelectedEntry -> Any`
   | Parameter / Returned | Type          | Description           |
   |----------------------|---------------|-----------------------|
-  | selectedEntry        | SelectedEntry | A selected entry      |
+  | selectedEntry        | SelectedEntry | A selected file       |
   | _returned_           | Any           | The associated handle |
 
 * `selectedEntryLeafName:: SelectedEntry -> String`

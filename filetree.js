@@ -1,5 +1,11 @@
 // # File Tree Types
 // ## Entry
+
+/*
+ * Get the name of an entry
+ * @param {Entry} entry - The entry, file or directory
+ * @return {string}
+ */
 function entryName(entry) {
   return isDirectoryEntry(entry) ? directoryName(entry) : fileName(entry);
 }
@@ -9,6 +15,11 @@ function makeDirectoryEntry(name, content) {
   return [name, content];
 }
 
+/*
+ * Check if an entry is a directory
+ * @param {Entry} entry - The entry, file or directory
+ * @return {boolean}
+ */
 function isDirectoryEntry(entry) {
   return Array.isArray(entry) && entry.length === 2 && typeof entry[0] === "string" && Array.isArray(entry[1])
 }
@@ -22,6 +33,13 @@ function directoryContent(directoryEntry) {
 }
 
 // ## File Entry
+
+/*
+ * Make a file entry, mapping its name to a handle
+ * @param {string} name - The file name
+ * @param {*} handle - Anything that is to be associated with the file
+ * @return {FileEntry}
+ */
 function makeFileEntry(name, handle) {
   return [name, handle];
 }
@@ -35,18 +53,42 @@ function fileHandle(fileEntry) {
 }
 
 // ## File Tree
+
+/*
+ * Make a file tree. See README
+ * @param {string} [root: ""] - The path to the highest entry in the tree. Automatically set when inserting files. Specify for advanced usage
+ * @param {Branches} [branches: []] - The entries in the file tree. Automatically updated when inserting files. Specify for advanced usage
+ * @return {FileTree}
+ */
 function makeFileTree(root, branches) {
   return [root, branches ? branches : []];
 }
 
+/*
+ * Get the root of a file tree
+ * @param {FileTree} fileTree - A file tree
+ * @return {string}
+ */
 function root(fileTree) {
   return fileTree[0];
 }
 
+/*
+ * Get the entries in a file tree
+ * @param {FileTree} fileTree - A file tree
+ * @return {Branches}
+ */
 function branches(fileTree) {
   return fileTree[1];
 }
 
+/*
+ * Insert a file in a file tree
+ * @param {FileTree} fileTree - A file tree
+ * @param {string} path - The path to the file
+ * @param {FileEntry} file - The file entry
+ * @return {FileTree}
+ */
 function insertInFileTree(fileTree, path, file) {
   const insertInFileTreeImpl = (entries, branch, path, ...insertedFileTree) => {
     if (path.length === 0) {
@@ -158,6 +200,14 @@ function lookupPreviousInBranch(branch, namedEntry, errorFunction) {
 
 // # Selection Types
 // ## Selection
+
+/*
+ * Make a selection in a file tree. See README
+ * @param {FileTree} fileTree - An empty file tree when constructing a selection. Specify for advanced usage
+ * @param {Branches} [selectedBranch] - The branch containing the selected entry. Specify for advanced usage
+ * @param {SelectedEntry} [selectedEntry] - The selected entry. Specify for advanced usage
+ * @return {FileTree}
+ */
 function makeSelectionInFileTree(fileTree, selectedBranch, selectedEntry) {
   if (branches(fileTree).length === 0) {
     return [fileTree, [], makeSelectedEntry()];
@@ -177,14 +227,30 @@ function selectedFileTree(selectionInFileTree) {
   return selectionInFileTree[0];
 }
 
+/*
+ * Get the selected branch from a selection
+ * @param {Selection} selectionInFileTree - A selection
+ * @return {Branches}
+ */
 function selectedBranch(selectionInFileTree) {
   return selectionInFileTree[1];
 }
 
+/*
+ * Get the selected entry from a selection
+ * @param {Selection} selectionInFileTree - A selection
+ * @return {SelectedEntry}
+ */
 function selectedEntry(selectionInFileTree) {
   return selectionInFileTree[2];
 }
 
+/*
+ * Update the file tree and selected branch associated with a selection
+ * @param {Selection} selectionInFileTree - A selection whose referenced file tree has just been updated
+ * @param {FileTree} newFileTree - The updated file tree
+ * @return {Selection}
+ */
 function refreshSelectedFileTree(selectionInFileTree, newFileTree) {
   const newSelectionBranchName = root(selectedFileTree(selectionInFileTree))
     ? root(selectedFileTree(selectionInFileTree)).slice(root(newFileTree).length)
@@ -199,14 +265,29 @@ function refreshSelectedFileTree(selectionInFileTree, newFileTree) {
 				                   selectedEntryType(entry)));
 }
 
+/*
+ * Select the next entry in the selected branch of a selection
+ * @param {Selection} selectionInFileTree - A selection
+ * @return {Selection} - If there is no next entry, the original selection is returned
+ */
 function selectNext(selectionInFileTree) {
   return selectAnotherEntryInBranch(selectionInFileTree, lookupNextInBranch);
 }
 
+/*
+ * Select the previous entry in the selected branch of a selection
+ * @param {Selection} selectionInFileTree - A selection
+ * @return {Selection} - If there is no previous entry, the original selection is returned
+ */
 function selectPrevious(selectionInFileTree) {
   return selectAnotherEntryInBranch(selectionInFileTree, lookupPreviousInBranch);
 }
 
+/*
+ * Change the selected branch for the content of a selected directory and select its first entry
+ * @param {Selection} selectionInFileTree - A selection
+ * @return {Selection} - If the original selection is a file, it is returned
+ */
 function visitChildBranch(selectionInFileTree) {
   if (isDirectorySelected(selectedEntry(selectionInFileTree))) {
     return selectAnotherBranch(selectionInFileTree, selectedEntryName(selectedEntry(selectionInFileTree)));
@@ -216,6 +297,11 @@ function visitChildBranch(selectionInFileTree) {
   }
 }
 
+/*
+ * Change the selected branch for the content of the parent directory and select its first entry
+ * @param {Selection} selectionInFileTree - A selection
+ * @return {Selection} - If the original selection has no parent directory, a selection on the first entry of the current directory is returned
+ */
 function visitParentBranch(selectionInFileTree) {
   const newBranchName = selectedEntryBranchName(selectedEntry(selectionInFileTree)) === ""
     ? ""
@@ -251,18 +337,38 @@ function makeSelectedEntry(name, handle, type) {
   return [name ? name : "", handle, type ? type : "file"];
 }
 
+/*
+ * Check if a selected entry is a directory
+ * @param {SelectedEntry} selectedEntry - A selected entry
+ * @return {boolean}
+ */
 function isDirectorySelected(selectedEntry) {
   return selectedEntryType(selectedEntry) === "directory";
 }
 
+/*
+ * Check if a selected entry is a file
+ * @param {SelectedEntry} selectedEntry - A selected entry
+ * @return {boolean}
+ */
 function isFileSelected(selectedEntry) {
   return selectedEntryType(selectedEntry) === "file";
 }
 
+/*
+ * Get the path from the root with the name included of a selected entry
+ * @param {SelectedEntry} selectedEntry - A selected entry
+ * @return {string}
+ */
 function selectedEntryName(selectedEntry) {
   return selectedEntry[0];
 }
 
+/*
+ * Get the handle associated with a file
+ * @param {SelectedEntry} selectedEntry - A selected entry that has to be a file
+ * @return {*} - The handle
+ */
 function selectedEntryHandle(selectedEntry) {
   return selectedEntry[1];
 }
@@ -271,6 +377,11 @@ function selectedEntryType(selectedEntry) {
   return selectedEntry[2];
 }
 
+/*
+ * Get the path from the root with the name excluded of a selected entry
+ * @param {SelectedEntry} selectedEntry - A selected entry
+ * @return {string}
+ */
 function selectedEntryBranchName(selectedEntry) {
   if (selectedEntryName(selectedEntry) === "") {
     return "";
@@ -280,11 +391,22 @@ function selectedEntryBranchName(selectedEntry) {
   }
 }
 
+/*
+ * Get the name of a selected entry
+ * @param {SelectedEntry} selectedEntry - A selected entry
+ * @return {string}
+ */
 function selectedEntryLeafName(selectedEntry) {
   return selectedEntryName(selectedEntry).split("/").slice(-1)[0];
 }
 
 // # Helpers
+
+/*
+ * Get the path and the name of a file from its full absolute path
+ * @param {string} fullPath - The path to the file with its name included
+ * @return {string[]} - An array of two strings. The first one is the path to the file. The second is the name of the file
+ */
 function parseFilePath(fullPath) {
   return (elements => [elements.slice(0, -1).join("/"), elements[elements.length - 1]])(fullPath.split("/"));
 }
