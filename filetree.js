@@ -1,3 +1,6 @@
+// Copyright (c) Adrien Cransac
+// License: MIT
+
 // # File Tree Types
 // ## Entry
 

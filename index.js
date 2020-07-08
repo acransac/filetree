@@ -1,3 +1,6 @@
+// Copyright (c) Adrien Cransac
+// License: MIT
+
 const {
   branches,
   entryName,
