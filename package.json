@@ -1,14 +1,22 @@
 {
-  "name": "filetree",
-  "version": "0.0.1",
-  "description": "A tree structure representing a collection of files within directories",
+  "name": "@acransac/filetree",
+  "version": "1.0.0",
+  "description": "A mapping of files organized by name in a file and directory tree with anything of value",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test_filetree.js"
   },
   "author": "Adrien Cransac",
-  "license": "ISC",
-  "devDependencies": {
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/acransac/filetree.git"
+  },
+  "bugs": {
+    "url": "https://github.com/acransac/filetree/issues"
+  },
+  "homepage": "https://github.com/acransac/filetree",
+  "dependencies": {
     "tester": "file:../tester"
   }
 }
