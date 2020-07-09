@@ -2,7 +2,7 @@
 // License: MIT
 
 const { branches, entryName, insertInFileTree, isDirectoryEntry, isFileSelected, makeFileEntry, makeFileTree, makeSelectionInFileTree, parseFilePath, refreshSelectedFileTree, root, selectedBranch, selectedEntry, selectedEntryBranchName, selectedEntryHandle, selectedEntryLeafName, selectedEntryName, selectNext, selectPrevious, visitChildBranch, visitParentBranch } = require('./filetree.js');
-const Test = require('tester');
+const Test = require('@acransac/tester');
 
 function makeFileTreeWithFiles(...filePaths) {
   const makeFileTreeWithFilesImpl = (fileTree, selection, fileHandle, filePaths) => {
