@@ -252,9 +252,10 @@ function selectedEntry(selectionInFileTree) {
  * Update the file tree and selected branch associated with a selection
  * @param {Selection} selectionInFileTree - A selection whose referenced file tree has just been updated
  * @param {FileTree} newFileTree - The updated file tree
+ * @param {function} [branchName: selectedEntryBranchName] - A function getting the branch name from a selected entry
  * @return {Selection}
  */
-function refreshSelectedFileTree(selectionInFileTree, newFileTree) {
+function refreshSelectedFileTree(selectionInFileTree, newFileTree, branchName) {
   const newSelectionBranchName = root(selectedFileTree(selectionInFileTree))
     ? root(selectedFileTree(selectionInFileTree)).slice(root(newFileTree).length)
     : "";
@@ -262,7 +263,9 @@ function refreshSelectedFileTree(selectionInFileTree, newFileTree) {
   const entry = selectedEntry(selectionInFileTree);
 
   return makeSelectionInFileTree(newFileTree,
-                                 lookupBranch(newFileTree, `${newSelectionBranchName}${selectedEntryBranchName(entry)}`),
+                                 lookupBranch(newFileTree,
+                                              `${newSelectionBranchName}${(branchName ? branchName : selectedEntryBranchName)
+                                                                            (entry)}`),
                                  makeSelectedEntry(`${newSelectionBranchName}${selectedEntryName(entry)}`,
                                                    selectedEntryHandle(entry),
                                                    selectedEntryType(entry)));
@@ -271,19 +274,29 @@ function refreshSelectedFileTree(selectionInFileTree, newFileTree) {
 /*
  * Select the next entry in the selected branch of a selection
  * @param {Selection} selectionInFileTree - A selection
+ * @param {function} [branchName: selectedEntryBranchName] - A function getting the branch name from a selected entry
+ * @param {function} [leafName: selectedEntryLeafName] - A function getting the leaf name from a selected entry
  * @return {Selection} - If there is no next entry, the original selection is returned
  */
-function selectNext(selectionInFileTree) {
-  return selectAnotherEntryInBranch(selectionInFileTree, lookupNextInBranch);
+function selectNext(selectionInFileTree, branchName, leafName) {
+  return selectAnotherEntryInBranch(selectionInFileTree,
+                                    lookupNextInBranch,
+                                    branchName ? branchName : selectedEntryBranchName,
+                                    leafName ? leafName : selectedEntryLeafName);
 }
 
 /*
  * Select the previous entry in the selected branch of a selection
  * @param {Selection} selectionInFileTree - A selection
+ * @param {function} [branchName: selectedEntryBranchName] - A function getting the branch name from a selected entry
+ * @param {function} [leafName: selectedEntryLeafName] - A function getting the leaf name from a selected entry
  * @return {Selection} - If there is no previous entry, the original selection is returned
  */
-function selectPrevious(selectionInFileTree) {
-  return selectAnotherEntryInBranch(selectionInFileTree, lookupPreviousInBranch);
+function selectPrevious(selectionInFileTree, branchName, leafName) {
+  return selectAnotherEntryInBranch(selectionInFileTree,
+                                    lookupPreviousInBranch,
+                                    branchName ? branchName : selectedEntryBranchName,
+                                    leafName ? leafName : selectedEntryLeafName);
 }
 
 /*
@@ -303,12 +316,13 @@ function visitChildBranch(selectionInFileTree) {
 /*
  * Change the selected branch for the content of the parent directory and select its first entry
  * @param {Selection} selectionInFileTree - A selection
+ * @param {function} [branchName: selectedEntryBranchName] - A function getting the branch name from a selected entry
  * @return {Selection} - If the original selection has no parent directory, a selection on the first entry of the current directory is returned
  */
-function visitParentBranch(selectionInFileTree) {
-  const newBranchName = selectedEntryBranchName(selectedEntry(selectionInFileTree)) === ""
+function visitParentBranch(selectionInFileTree, branchName) {
+  const newBranchName = (branchName ? branchName : selectedEntryBranchName)(selectedEntry(selectionInFileTree)) === ""
     ? ""
-    : selectedEntryBranchName(selectedEntry(selectionInFileTree)).split("/").slice(0, -1).join("/");
+    : (branchName ? branchName : selectedEntryBranchName)(selectedEntry(selectionInFileTree)).split("/").slice(0, -1).join("/");
 
   return selectAnotherBranch(selectionInFileTree, newBranchName);
 }
@@ -323,14 +337,12 @@ function selectAnotherBranch(selectionInFileTree, branchName) {
                                                    isDirectoryEntry(newBranch[0]) ? "directory" : "file"));
 }
 
-function selectAnotherEntryInBranch(selectionInFileTree, selector) {
-  const otherEntry = selector(selectedBranch(selectionInFileTree),
-                              selectedEntryLeafName(selectedEntry(selectionInFileTree)),
-                              entry => {});
+function selectAnotherEntryInBranch(selectionInFileTree, selector, branchName, leafName) {
+  const otherEntry = selector(selectedBranch(selectionInFileTree), leafName(selectedEntry(selectionInFileTree)), entry => {});
 
   return makeSelectionInFileTree(selectedFileTree(selectionInFileTree),
                                  selectedBranch(selectionInFileTree),
-                                 makeSelectedEntry(selectedEntryBranchName(selectedEntry(selectionInFileTree)) + `/${entryName(otherEntry)}`,
+                                 makeSelectedEntry(branchName(selectedEntry(selectionInFileTree)) + `/${entryName(otherEntry)}`,
                                                    isDirectoryEntry(otherEntry) ? undefined : fileHandle(otherEntry),
                                                    isDirectoryEntry(otherEntry) ? "directory" : "file"));
 }
