@@ -1,6 +1,6 @@
 {
   "name": "@acransac/filetree",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A mapping of files organized by name in a file and directory tree with anything of value",
   "main": "index.js",
   "scripts": {
